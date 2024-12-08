@@ -1,0 +1,86 @@
+# 导入必要的库  
+import pandas as pd  
+import numpy as np  
+import seaborn as sns  
+import matplotlib.pyplot as plt  
+from sklearn.model_selection import train_test_split, GridSearchCV  
+from sklearn.linear_model import LogisticRegression  
+from sklearn.metrics import f1_score, classification_report, confusion_matrix  
+from sklearn.preprocessing import StandardScaler   
+from imblearn.over_sampling import SMOTE  
+
+# 数据加载  
+data_path = r"D:\cxdownload\data.csv"  
+data = pd.read_csv(data_path)  
+
+# 数据概览  
+print("Columns in the dataset:", data.columns)  
+print(data.head())  
+print(data.info())  
+
+# 检查缺失值并进行处理  
+missing_values = data.isnull().sum()  
+print("Missing values:\n", missing_values[missing_values > 0])  
+
+# 使用均值填补缺失值  
+for col in data.select_dtypes(include=[np.number]).columns:  
+    data[col].fillna(data[col].mean(), inplace=True)  
+
+# 将 'Sex' 列转换为二进制值  
+data['Sex'] = np.round(data['Sex']).astype(int)  
+
+# 删除不需要的列  
+columns_to_drop = ['Id', 'target'] if 'Id' in data.columns and 'target' in data.columns else ['target']  
+X = data.drop(columns=columns_to_drop)  
+y = data['target']  
+
+# 将分类变量转换为虚拟变量  
+X = pd.get_dummies(X, drop_first=True)  
+
+# 拆分数据集  
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)  
+
+# 使用 SMOTE 处理类别不平衡  
+smote = SMOTE(random_state=42)  
+X_resampled, y_resampled = smote.fit_resample(X_train, y_train)  
+
+# 特征缩放  
+scaler = StandardScaler()  
+X_resampled = scaler.fit_transform(X_resampled)  
+X_test = scaler.transform(X_test)  
+
+# 更大的超参数搜索空间  
+param_grid = {  
+    'C': [0.001, 0.01, 0.1, 1, 10, 100, 1000],  
+    'penalty': ['l1', 'l2', 'elasticnet'],  # 增加新惩罚  
+    'solver': ['liblinear', 'saga', 'newton-cg', 'lbfgs'],  
+    'max_iter': [1000, 2000, 5000]  
+}  
+
+# 使用GridSearchCV进行超参数搜索  
+grid_search = GridSearchCV(LogisticRegression(), param_grid=param_grid, scoring='f1_macro', cv=5, n_jobs=-1)  
+grid_search.fit(X_resampled, y_resampled)  
+
+# 获取最佳模型  
+best_model = grid_search.best_estimator_  
+
+# 使用最佳模型进行预测  
+y_pred = best_model.predict(X_test)  
+
+# 计算F1 Score（宏平均）  
+f1_macro = f1_score(y_test, y_pred, average='macro')  
+print(f'F1 Score (Macro): {f1_macro:.4f}')  
+
+# 打印分类报告  
+print("\nClassification Report:\n", classification_report(y_test, y_pred))  
+
+# 绘制混淆矩阵  
+conf_matrix = confusion_matrix(y_test, y_pred)  
+plt.figure(figsize=(10, 7))  
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues',  
+            xticklabels=np.unique(y),  
+            yticklabels=np.unique(y))  
+plt.ylabel('Actual')  
+plt.xlabel('Predicted')  
+plt.title('Confusion Matrix')  
+plt.show()

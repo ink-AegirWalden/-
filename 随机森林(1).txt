@@ -1,0 +1,120 @@
+# 导入必要的库
+import pandas as pd #用于导入数据
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import f1_score,classification_report, confusion_matrix
+from sklearn.preprocessing import LabelEncoder
+from sklearn.impute import SimpleImputer #导入简单插补
+
+# 读取数据
+df = pd.read_csv(r"C:\Users\57298\Desktop\软件\作业杂项\人工智能\data.csv")  
+#这个语句应用了pandas库里的read函数
+#括号里的r用于使编译器将\正常读入，而不是视为转义符号
+#这个语句用于导入csv格式的文件
+
+# 数据预处理
+
+# 1. 处理缺失值（填充或删除）
+imputer = SimpleImputer(strategy="most_frequent")  
+
+#SimpleImputer()  有missing_values、strategy、fill_value、copy、add_indicator和keep_empty_features
+#missing_values：缺失值的占位符。
+#strategy：插补策略，此处值为most_frequent，即使用众数填充缺失值
+#fill_value：当 strategy == “constant”时，用于替换所有 missing_values的出现次数。此处为默认None
+#copy：如果为 True，则将创建 X 的副本。默认为True
+#add_indicator：如果为 True，则转换将堆叠到输出上 的 imputer's transform。默认为False
+#keep_empty_features：如果为 True，则调用 时，将在结果中返回仅由缺失值组成的特征。 
+
+df_imputed = pd.DataFrame(imputer.fit_transform(df), columns=df.columns)
+#这个语句应用了pandas库里的DataFrame函数，用于生成二维表格
+#imputer.fit_transform(df)表示表格数据来源
+#columns=df.columns表示表格的列名使用df的列名
+
+#  将分类特征转化为数值编码（如：性别，教育程度等）
+label_encoders = {}
+for column in df_imputed.select_dtypes(include=['object']).columns:
+    le = LabelEncoder()
+    df_imputed[column] = le.fit_transform(df_imputed[column])
+    df_imputed[column] = df_imputed[column].rpund().astype(int)
+    label_encoders[column] = le
+#这段代码的作用是对df_imputed数据框（DataFrame）中的所有分类（字符串类型）特征进行标签编码（Label Encoding）。
+#.rpund().astype(int)是用于将数据中的错误值四舍五入，使之变为利于分析的数据
+#label_encoders = {}，用于生成字典，便于对这些列进行逆转换或了解编码的映射关系。
+#根据列 dtypes 返回 DataFrame 列的子集。
+
+# 3. 对目标列（target）进行标签编码
+target_encoder = LabelEncoder()
+y_encoded = target_encoder.fit_transform(df_imputed["target"])  # 编码目标变量
+label_encoders["target"] = target_encoder  # 存储目标编码器
+
+# 3. 特征和目标变量分离
+X = df_imputed.drop(columns=["target", "id"])  # 删除id和目标列
+y = y_encoded
+
+# 4. 划分训练集和测试集
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# 5. 初始化并训练随机森林分类器
+rf_classifier = RandomForestClassifier(
+    n_estimators=100,
+    random_state=42
+)
+rf_classifier.fit(X_train, y_train)
+
+此处算法的默认参数为：
+{             n_estimators: Any = 100,
+             *,
+             criterion: Any = "gini",
+             max_depth: Any = None,
+             min_samples_split: Any = 2,
+             min_samples_leaf: Any = 1,
+             min_weight_fraction_leaf: Any = 0.0,
+             max_features: Any = "sqrt",
+             max_leaf_nodes: Any = None,
+             min_impurity_decrease: Any = 0.0,
+             bootstrap: Any = True,
+             oob_score: Any = False,
+             n_jobs: Any = None,
+             random_state: Any = None,
+             verbose: Any = 0,
+             warm_start: Any = False,
+             class_weight: Any = None,
+             ccp_alpha: Any = 0.0,
+             max_samples: Any = None,
+             monotonic_cst: Any = None) -> None    }
+
+# 6. 模型评估
+y_pred = rf_classifier.predict(X_test)
+
+# 输出混淆矩阵和分类报告
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+# 7. 显示重要特征
+feature_importances = pd.DataFrame(
+				   rf_classifier.feature_importances_,
+                                   index=X.columns,
+                                   columns=["importance"]).sort_values("importance", ascending=False)
+print("\nFeature Importances:")
+print(feature_importances)
+
+# 8. 用模型对数据进行预测（使用预测集）
+new_data = pd.DataFrame(X_test, columns=X.columns) 
+new_prediction = rf_classifier.predict(new_data)
+predicted_class = label_encoders["target"].inverse_transform(new_prediction)
+
+print("\nPredicted Class for New Data:", predicted_class)
+
+# 使用 inverse_transform 解码预测结果
+predicted_class = target_encoder.inverse_transform(new_prediction)
+print("\nPredicted Class for New Data:", predicted_class)
+
+#使用f1-score进行评估
+f1 = f1_score(y_test, predicted_class, average="weighted")
+print("\nF1 Score(weighted):", f1)
+
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
