@@ -1,0 +1,49 @@
+import pandas as pd  #用于导入数据  
+from sklearn.model_selection import train_test_split, GridSearchCV, StratifiedKFold  
+from sklearn.ensemble import RandomForestClassifier  
+from sklearn.metrics import f1_score, classification_report, confusion_matrix  
+from sklearn.preprocessing import LabelEncoder  
+from sklearn.impute import SimpleImputer  # 导入简单插补  
+from sklearn.feature_selection import SelectFromModel  # 特征选择  
+
+# 读取数据  
+df = pd.read_csv(r"C:\Users\HP\Desktop\人工智能\data.csv")  
+
+# 数据预处理  
+# 1. 处理缺失值（填充或删除）  
+imputer = SimpleImputer(strategy="most_frequent")  
+df_imputed = pd.DataFrame(imputer.fit_transform(df), columns=df.columns)  
+
+# 2. 将分类特征转化为数值编码  
+label_encoders = {}  
+for column in df_imputed.select_dtypes(include=['object']).columns:  
+    le = LabelEncoder()  
+    df_imputed[column] = le.fit_transform(df_imputed[column])  
+    label_encoders[column] = le  
+
+# 3. 对目标列（target）进行标签编码  
+target_encoder = LabelEncoder()  
+y_encoded = target_encoder.fit_transform(df_imputed["target"])  
+label_encoders["target"] = target_encoder  
+
+# 4. 特征和目标变量分离  
+X = df_imputed.drop(columns=["target", "id"])  
+y = y_encoded  
+
+# 特征选择  
+model = RandomForestClassifier(random_state=42)  
+model.fit(X, y)  
+selector = SelectFromModel(model, prefit=True)  
+X_selected = selector.transform(X)  
+
+# 5. 划分训练集和测试集  
+X_train, X_test, y_train, y_test = train_test_split(X_selected, y, test_size=0.3, random_state=42)  
+
+# 6. 初始化随机森林分类器  
+rf_classifier = RandomForestClassifier(random_state=42)  
+
+# 7. 超参数调整  
+param_grid = {  
+    'n_estimators': [100, 200, 300],          # 森林中的树木数量  
+    'max_depth': [None, 10, 20, 30],          # 树的最大深度  
+    'min_samples_split': [2, 5, 10],          # 节点分裂所需的最小样本数  
