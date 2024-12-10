@@ -12,14 +12,14 @@ Contains linear regression, KNN, random forest.*
 |——新建 文本文档(3).txt
 |——新建 文本文档.txt
 |—— 随机森林（1）.txt
-#选择模型原因
-##KNN
+# 选择模型原因
+## KNN
 KNN is a nonparametric algorithm that does not require assumptions about the distrution.  
 In addition,KNN is very sensitive to the similarity between feature classes and can adapt to diversed ata features.
-##Linear regression
+## Linear regression
 Linear regression model is simple and intuitive.
-##Random forest
+## Random forest
 It can produce high-accuracy classifiers, which can deal with high-dim.  
 High recall can be obtained, but the model needs to be adjusted.  
-#END
+# END
 Thank you for your reading.😊
