@@ -8,4 +8,4 @@ Contains linear regression, KNN, random forest.*
 |—— dazuoye_knn.py   * KNN *  
 |—— sqljdbc_6.0.8112.200_chs.exe   
 |—— 新建 文本文档.TXT
-|—— 随机森林（1）.txtv
+|—— 随机森林（1）.txt
