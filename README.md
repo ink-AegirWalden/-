@@ -1,8 +1,8 @@
 
 # Brief introduction
-**This is a group work repository.**😊  
+**This is a group work repository.** 
 *This project is to predict diabetes related data through different algorithms, and evaluate, optimize and compare different algorithms.   
-Contains linear regression, KNN, random forest.* 
+Contains linear regression, KNN, random forest.* 😊 
 # Catalog
 |—— ReadMe.md   
 |——Untitled2-Copy1.ipynb 
@@ -22,4 +22,5 @@ Linear regression model is simple and intuitive.
 It can produce high-accuracy classifiers, which can deal with high-dim.  
 High recall can be obtained, but the model needs to be adjusted.  
 # END
-*Thank you for your reading.*😊
+*Thank you for your reading.*
+😊
