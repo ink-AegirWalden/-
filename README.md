@@ -7,11 +7,11 @@ Contains linear regression, KNN, random forest.*
 |—— ReadMe.md   
 |——Untitled2-Copy1.ipynb 
 |—— dazuoye_knn.py     
-|—— sqljdbc_6.0.8112.200_chs.exe   
-|—— 新建 文本文档(2).txt
-|——新建 文本文档(3).txt
-|——新建 文本文档.txt
-|—— 随机森林（1）.txt
+|—— sqljdbc_6.0.8112.200_chs.exe    
+|—— 新建 文本文档(2).txt  
+|——新建 文本文档(3).txt  
+|——新建 文本文档.txt  
+|—— 随机森林（1）.txt  
 # 选择模型原因
 ## KNN
 KNN is a nonparametric algorithm that does not require assumptions about the distrution.  
@@ -22,4 +22,4 @@ Linear regression model is simple and intuitive.
 It can produce high-accuracy classifiers, which can deal with high-dim.  
 High recall can be obtained, but the model needs to be adjusted.  
 # END
-Thank you for your reading.😊
+*Thank you for your reading.*😊
